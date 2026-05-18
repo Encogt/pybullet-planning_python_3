@@ -161,12 +161,13 @@ def write(filename, string):
         f.write(string)
 
 def read_pickle(filename):
-    # Can sometimes read pickle3 from python2 by calling twice
     with open(filename, 'rb') as f:
-        try:
-            return pickle.load(f)
-        except UnicodeDecodeError as e:
-            return pickle.load(f, encoding='latin1')
+        data = f.read()
+    try:
+        return pickle.loads(data)
+    except (UnicodeDecodeError, ValueError, pickle.UnpicklingError):
+        # Python 2 protocol-0 pickles with \r\n line endings fail in Python 3
+        return pickle.loads(data.replace(b'\r\n', b'\n'), encoding='latin1')
 
 def write_pickle(filename, data):  # NOTE - cannot pickle lambda or nested functions
     with open(filename, 'wb') as f:
@@ -1100,7 +1101,8 @@ def connect(use_gui=True, shadows=True, color=None, width=None, height=None, mp4
     # Shared Memory: execute the physics simulation and rendering in a separate process
     # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/examples/vrminitaur.py#L7
     # make sure to compile pybullet with PYBULLET_USE_NUMPY enabled
-    if use_gui and not is_darwin() and ('DISPLAY' not in os.environ):
+    import sys as _sys
+    if use_gui and not is_darwin() and not _sys.platform.startswith('win') and ('DISPLAY' not in os.environ):
         use_gui = False
         print('No display detected!')
     method = p.GUI if use_gui else p.DIRECT
