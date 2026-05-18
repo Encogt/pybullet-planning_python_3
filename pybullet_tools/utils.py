@@ -20,6 +20,7 @@ import cProfile
 import pstats
 
 from collections import defaultdict, deque, namedtuple
+from collections.abc import MutableSet
 from itertools import product, combinations, count, cycle, islice
 from multiprocessing import TimeoutError
 from contextlib import contextmanager
@@ -345,7 +346,7 @@ def named_tuple(name, fields, defaults=None):
         NT.__new__.__defaults__ = defaults
     return NT
 
-class OrderedSet(collections.OrderedDict, collections.MutableSet):
+class OrderedSet(collections.OrderedDict, MutableSet):
     # TODO: https://stackoverflow.com/questions/1653970/does-python-have-an-ordered-set
     def __init__(self, seq=()): # known special case of set.__init__
         #super(OrderedSet, self).__init__()
@@ -1384,11 +1385,11 @@ def set_camera(yaw, pitch, distance, target_position=np.zeros(3)):
 
 def get_pitch(point):
     dx, dy, dz = point
-    return np.math.atan2(dz, np.sqrt(dx ** 2 + dy ** 2))
+    return math.atan2(dz, np.sqrt(dx ** 2 + dy ** 2))
 
 def get_yaw(point):
     dx, dy = point[:2]
-    return np.math.atan2(dy, dx)
+    return math.atan2(dy, dx)
 
 def set_camera_pose(camera_point, target_point=np.zeros(3)):
     delta_point = np.array(target_point) - np.array(camera_point)
